@@ -9,7 +9,7 @@ var connection = mysql.createPool({
     password: process.env.MYSQL_PASS || 'iv2RACn8CfzqC3rFH4nY',
     database: process.env.MYSQL_DB || 'bajvkiejxkj0huht7zci',
     multipleStatements: true,
-    connectionLimit: 10
+    connectionLimit: 2
 });
 
 const cors = require('cors');
@@ -144,10 +144,12 @@ io.on('connection', (socket)=>{
                                 console.log(result);
                                 console.log(notOnlineUsers);
                                 if((result.filter(e=> (e.user1==sender && e.user2==notOnlineUsers[i])).length == 0) && (result.filter(e=> (e.user2==sender && e.user1==notOnlineUsers[i])).length == 0)){
-                                    if(i==notOnlineUsers.length-1){
-                                        q2 += `('${sender}', '${notOnlineUsers[i]}')`;
-                                    }else{
-                                        q2 += `('${sender}', '${notOnlineUsers[i]}'), `;
+                                    if(notOnlineUsers[i]!=-1){
+                                        if(i==notOnlineUsers.length-1){
+                                            q2 += `('${sender}', '${notOnlineUsers[i]}')`;
+                                        }else{
+                                            q2 += `('${sender}', '${notOnlineUsers[i]}'), `;
+                                        }
                                     }
                                 }
                             }
