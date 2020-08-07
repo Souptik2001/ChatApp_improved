@@ -2,7 +2,7 @@ const express = require('express');
 const http = require('http');
 const socketio = require('socket.io');
 var mysql = require('mysql');
-const unread = {}; // Temporarily this object later to be shifted to a cache
+const unread = {}; // This object will be later shifted to a cache
 var connection = mysql.createPool({
     host: process.env.MYSQL_HOST || 'bajvkiejxkj0huht7zci-mysql.services.clever-cloud.com',
     user: process.env.MYSQL_USER || 'ujjo852okezglc86',
@@ -19,8 +19,8 @@ app.use(cors());
 const server = http.createServer(app);
 const io = socketio(server);
 
-const temp = {}; // Temporarily this object later to be shifted to a cache
-const temp_r = {}; // Temporarily this object later to be shifted to a cache
+const temp = {}; // This object will be later shifted to a cache
+const temp_r = {}; // This object will be later shifted to a cache
 
 io.on('connection', (socket)=>{
     socket.emit('getUserid');
