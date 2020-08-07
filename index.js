@@ -144,7 +144,7 @@ io.on('connection', (socket)=>{
                                 console.log(result);
                                 console.log(notOnlineUsers);
                                 if((result.filter(e=> (e.user1==sender && e.user2==notOnlineUsers[i])).length == 0) && (result.filter(e=> (e.user2==sender && e.user1==notOnlineUsers[i])).length == 0)){
-                                    if(notOnlineUsers[i]!=-1){
+                                    if(notOnlineUsers[i]!=-1 && notOnlineUsers[i]!=sender){
                                         if(i==notOnlineUsers.length-1){
                                             q2 += `('${sender}', '${notOnlineUsers[i]}')`;
                                         }else{
