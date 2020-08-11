@@ -1,8 +1,9 @@
+var fs = require('fs');
 const express = require('express');
 const http = require('http');
 const socketio = require('socket.io');
 var mysql = require('mysql');
-const unread = {}; // This object will be later shifted to a cache
+var unread = {};
 var connection = mysql.createPool({
     host: process.env.MYSQL_HOST || 'bajvkiejxkj0huht7zci-mysql.services.clever-cloud.com',
     user: process.env.MYSQL_USER || 'ujjo852okezglc86',
@@ -10,6 +11,17 @@ var connection = mysql.createPool({
     database: process.env.MYSQL_DB || 'bajvkiejxkj0huht7zci',
     connectionLimit: 2
 });
+// The unread data is backup to a file so that is somehow the program crashes then the data is not lost
+try{
+    unread = JSON.parse(fs.readFileSync('./unreads', 'utf8'));
+}catch{
+    fs.writeFile('./unreads', '{}', (err)=>{
+        if(err){
+            console.log(err);
+        }
+    });
+}
+console.log(unread);
 
 const cors = require('cors');
 
@@ -19,12 +31,12 @@ app.use(cors());
 const server = http.createServer(app);
 const io = socketio(server);
 
-const temp = {}; // This object will be later shifted to a cache
-const temp_r = {}; // This object will be later shifted to a cache
+const temp = {}; 
+const temp_r = {}; 
 
 io.on('connection', (socket)=>{
     // Server asks the client to provide its username(unique)
-    socket.emit('getUserid');
+    // socket.emit('getUserid');
     // Client provides the username and server stores the username and its socket.id as key-value pair in temp object and temp_r is just the opposite key-value pair.
     socket.on('noteUserid', (username)=>{
         if(temp[username]!=undefined){
@@ -106,6 +118,11 @@ io.on('connection', (socket)=>{
                 delete unread[data.receiver];
             }
         }
+        fs.writeFile('./unreads', JSON.stringify(unread), (err)=>{
+            if(err){
+                console.log(err);
+            }
+        });
     });
     // Client tells the server 
     socket.on('checkUnread', (data)=>{
@@ -198,6 +215,11 @@ io.on('connection', (socket)=>{
                         }
                     }
                 }
+                fs.writeFile('./unreads', JSON.stringify(unread), (err)=>{
+                    if(err){
+                        console.log(err);
+                    }
+                });
                 console.log(unread);
             });
             // If the message is a normal message
