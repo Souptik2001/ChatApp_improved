@@ -4,6 +4,7 @@ const http = require('http');
 const socketio = require('socket.io');
 var mysql = require('mysql');
 var unread = {};
+const jwt = require('jsonwebtoken');
 var connection = mysql.createPool({
     host: process.env.MYSQL_HOST || 'bajvkiejxkj0huht7zci-mysql.services.clever-cloud.com',
     user: process.env.MYSQL_USER || 'ujjo852okezglc86',
@@ -26,6 +27,7 @@ console.log(unread);
 const cors = require('cors');
 
 const app = express();
+app.use(express.json());
 // This is for avoiding the CORS error that is we can call the backend API from the browser
 app.use(cors());
 const server = http.createServer(app);
@@ -35,8 +37,6 @@ const temp = {};
 const temp_r = {}; 
 
 io.on('connection', (socket)=>{
-    // Server asks the client to provide its username(unique)
-    // socket.emit('getUserid');
     // Client provides the username and server stores the username and its socket.id as key-value pair in temp object and temp_r is just the opposite key-value pair.
     socket.on('noteUserid', (username)=>{
         if(temp[username]!=undefined){
@@ -291,13 +291,41 @@ app.get('/getContacts', (req, res) => {
             }
         });
     } else {
-        console.log("Psss params");
         res.json({
             "Error": "Pass params"
         });
     }
 });
 
+app.post('/login', (req, res)=>{
+    console.log(req.body.user + ' ' + req.body.pass);
+    var  q = `SELECT username FROM logins WHERE username=? AND password=?`;
+    connection.query(q, [req.body.user, req.body.pass], (err, result)=>{
+        if(err){
+            console.log(err);
+        }else{
+            var t;
+            if(result.length==0){
+                // Wrong cred
+                t = { token: "error" };
+            }else{
+                var user = { name: result[0].username };
+                t = { name: result[0].username, token: jwt.sign(user, process.env.ACCESS_TOKEN || 'secret_token')}; 
+            }
+            res.json(t);
+        }
+    });
+});
+
+app.post('/verify', (req, res)=>{
+    jwt.verify(req.body.token, process.env.ACCESS_TOKEN || 'secret_token', (err, user) => {
+        if (err) {
+            res.json({"Error": "User not identified"});
+        }else{
+            res.json({"Success": "User Validation successfull"});
+        }
+    });
+});
 
 
 server.listen(process.env.PORT || 3000, ()=>{
